@@ -1,0 +1,570 @@
+/* ============================================================
+   Nestrox — Dashboard Styles
+   Color Palette: white (#FFFFFF), #1c28e4, #010f55, #8118fa
+   ============================================================ */
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --white: #ffffff;
+  --blue: #1c28e4;
+  --navy: #010f55;
+  --purple: #8118fa;
+  --bg: #f4f5fb;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --nav-h: 80px;
+  --sidebar-w: 280px;
+  --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--navy);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   Top Navigation Bar
+   ============================================================ */
+.topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--nav-h);
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 2px 16px rgba(1, 15, 85, 0.06), 0 1px 4px rgba(1, 15, 85, 0.03);
+  z-index: 500;
+}
+
+/* Nav Buttons */
+.nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+
+.nav-btn svg {
+  width: 26px;
+  height: 26px;
+  transition: transform 0.2s ease;
+}
+
+.nav-btn:hover svg {
+  transform: scale(1.1);
+}
+
+.nav-btn--profile svg {
+  fill: var(--purple);
+}
+
+.nav-btn--profile:hover {
+  background: rgba(129, 24, 250, 0.08);
+}
+
+.nav-btn--bell svg {
+  fill: var(--navy);
+}
+
+.nav-btn--bell:hover {
+  background: rgba(1, 15, 85, 0.06);
+}
+
+/* Brand Image */
+.nav-brand {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  min-width: 0;
+}
+
+.nav-brand-img {
+  height: 56px;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Overlay
+   ============================================================ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(1, 15, 85, 0.25);
+  z-index: 600;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition), visibility var(--transition);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ============================================================
+   Sidebars (shared)
+   ============================================================ */
+.sidebar {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  width: var(--sidebar-w);
+  z-index: 700;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+/* ---------- Left Sidebar ---------- */
+.sidebar--left {
+  left: 0;
+  transform: translateX(-100%);
+  background: var(--purple);
+}
+
+.sidebar--left.open {
+  transform: translateX(0);
+}
+
+/* ---------- Right Sidebar ---------- */
+.sidebar--right {
+  right: 0;
+  transform: translateX(100%);
+  background: var(--navy);
+}
+
+.sidebar--right.open {
+  transform: translateX(0);
+}
+
+/* Sidebar Header */
+.sidebar__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebar__header svg {
+  width: 48px;
+  height: 48px;
+  fill: var(--white);
+  opacity: 0.85;
+}
+
+.sidebar__avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar__avatar svg {
+  width: 38px;
+  height: 38px;
+  fill: var(--white);
+  opacity: 1;
+}
+
+.sidebar__greeting {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.01em;
+}
+
+/* Notification header variant */
+.sidebar__header--notif {
+  flex-direction: row;
+  gap: 10px;
+  padding: 32px 24px 24px;
+}
+
+.sidebar__header--notif svg {
+  width: 24px;
+  height: 24px;
+  opacity: 1;
+}
+
+.sidebar__header--notif p {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+
+/* Sidebar Menu */
+.sidebar__menu {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 14px;
+  gap: 4px;
+  flex: 1;
+}
+
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--white);
+  transition: background var(--transition);
+  text-align: left;
+  width: 100%;
+}
+
+.sidebar__item svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--white);
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.sidebar__item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.sidebar__item:active {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.sidebar__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 8px 18px;
+}
+
+.sidebar__item--logout {
+  margin-top: auto;
+}
+
+/* ---------- Notification Empty State ---------- */
+.notif-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 24px;
+}
+
+.notif-empty__icon {
+  width: 56px;
+  height: 56px;
+  fill: var(--white);
+  opacity: 0.18;
+}
+
+.notif-empty__text {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--white);
+  opacity: 0.55;
+  text-align: center;
+}
+
+/* ============================================================
+   Dashboard Main Content
+   ============================================================ */
+.dashboard {
+  padding-top: calc(var(--nav-h) + 32px);
+  padding-bottom: 80px;
+  min-height: 100vh;
+}
+
+/* ---------- Quick-Action Cards ---------- */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 0 24px;
+  max-width: 960px;
+  margin: 0 auto;
+  animation: fadeUp 0.5s ease-out;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 36px 20px;
+  background: var(--blue);
+  border: none;
+  border-radius: 18px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(28, 40, 228, 0.18), 0 1px 6px rgba(28, 40, 228, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  font-family: var(--font);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(129, 24, 250, 0.25), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(28, 40, 228, 0.28), 0 2px 10px rgba(28, 40, 228, 0.12);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(28, 40, 228, 0.2);
+}
+
+.card__icon {
+  position: relative;
+  z-index: 1;
+}
+
+.card__icon svg {
+  width: 36px;
+  height: 36px;
+  fill: var(--white);
+}
+
+.card__title {
+  position: relative;
+  z-index: 1;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--white);
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.card__plus {
+  position: relative;
+  z-index: 1;
+  font-size: 2.25rem;
+  font-weight: 300;
+  color: var(--white);
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover .card__plus {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+/* ---------- Footer ---------- */
+.dash-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 14px 24px;
+  text-align: center;
+  background: var(--bg);
+}
+
+.dash-footer p {
+  font-size: 0.75rem;
+  color: rgba(1, 15, 85, 0.35);
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   Animations
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+/* Tablet */
+@media (max-width: 768px) {
+  :root {
+    --nav-h: 72px;
+    --sidebar-w: 270px;
+  }
+
+  .topnav {
+    padding: 0 18px;
+  }
+
+  .nav-brand-img {
+    height: 46px;
+  }
+
+  .nav-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 0 18px;
+  }
+
+  .card {
+    padding: 28px 16px;
+    border-radius: 16px;
+  }
+
+  .card__icon svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .card__title {
+    font-size: 0.8125rem;
+  }
+
+  .card__plus {
+    font-size: 1.75rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  :root {
+    --sidebar-w: 260px;
+  }
+
+  .topnav {
+    padding: 0 14px;
+  }
+
+  .nav-brand-img {
+    height: 40px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 0 16px;
+    max-width: 400px;
+  }
+
+  .card {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 22px 20px;
+    border-radius: 14px;
+  }
+
+  .card__icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .card__title {
+    flex: 1;
+    text-align: left;
+    font-size: 0.9375rem;
+  }
+
+  .card__plus {
+    font-size: 1.75rem;
+    opacity: 0.5;
+  }
+
+  .sidebar__header {
+    padding: 32px 20px 22px;
+  }
+
+  .sidebar__avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .sidebar__avatar svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar__greeting {
+    font-size: 1rem;
+  }
+
+  .sidebar__item {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 360px) {
+  :root {
+    --sidebar-w: 240px;
+  }
+
+  .nav-brand-img {
+    height: 34px;
+  }
+
+  .cards {
+    padding: 0 12px;
+  }
+
+  .card {
+    padding: 18px 16px;
+  }
+}

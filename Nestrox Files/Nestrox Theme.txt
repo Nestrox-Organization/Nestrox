@@ -1,0 +1,36 @@
+									    				NESTROX
+
+Problems:           		
+Rent sharing
+Groceries
+Electricity bills
+Someone paid on behalf of someone else [MAJOR]
+Advance deposits
+Household items (fans, buckets, utensils)
+Repairs (washing machine, plumber, electrician)
+Monthly settlements
+Trust issues ("I already paid you bro") [MAJOR]
+Forgotten transactions [MAJOR]
+Different contribution percentages [MAJOR]
+
+
+
+
+Features:
+Module 1: Room Creation (Room names & members)-[Every expense belongs to a room.]
+Module 2: Expense Tracking (Adding expense name, type, price, paid by whom, and date)-[App automatically calculates shares.]
+Module 3: Equal or Custom split percentage (Ex: P1= 35%, P2= 35%, P3= 15%, P4= 15%)-[Generates value according to split percentages.]
+Module 4: Advance Payments (Rent advance amount paid by tenants)-[App automatically calculates who should receive how much.]
+Module 5: Personal Loans Between Roommates (P1 gives P2 ₹500. Record: P2 owes P1 ₹500)-[This feature alone prevents many fights.]
+Module 6: Pay-On-Behalf Feature (Record: P1 pays for all)-[App automatically distributes.]
+Module 7: Settlement Engine (Optional directs to settlement amount payment section)-[One-click settlement.]
+Module 8: Ledger System (Can add transaction statements for room expenses like date, amount, paid by, category)-[Nobody can delete records silently, Only edit with history.]
+Module 9: Monthly Closing Repost (Generating monthly expenses report at the end of the month)-[App calculates and generates report which help to track monthly expense.]
+Module 10: Optional evidence System (Adding images or screenshots of bills, receipts, UPI payments, etc)-[No arguments over bills.]
+Module 11: Notifications (Sends notifications about added bills, settled amount, monthly reports, etc)-[Reminds and notifies users.]
+Module 12: Transparency Dashboard (Every roommate sees: Total Paid, Total Owes, Total Received, Pending Loans, Current Balance)-[No hidden calculations.]
+Module 13: Smart Reminders (P1 owes ₹500 to P2, pending for 15 days...)-[Reminder sent automatically.]
+Module 15: Analytics (Highest Spender: P1, Most Expense Category: Groceries, Average Monthly Spend: ₹5200 per person, Outstanding Loans: ₹1200)-[Shows analytics.]
+Module 16: Room Inventory (Bachelor rooms often buy shared items. Ex; Inventory: Rice Cooker, Bought By: Pankaj, Cost: ₹1200, Ownership: Room Asset)-[When someone leaves the room, app calculates compensation.]
+
+
