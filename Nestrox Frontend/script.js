@@ -1,241 +1,30 @@
 /* ============================================================
-   Nestrox — Auth Page Logic (Frontend-Only with CSV Storage)
+   Nestrox — Auth Page Logic
    
-   All user data is stored in localStorage as a CSV-formatted
-   string. Passwords are hashed using SHA-256 via the Web
-   Crypto API. Sessions are tracked via localStorage.
-   
-   NOTE: SHA-256 is NOT a secure password hash for production.
-   This is a temporary solution. When migrating to a real
-   backend with a database, replace with bcrypt or argon2.
+   Registration and Login are handled via the Express API at
+   http://localhost:3000. Passwords are hashed on the server
+   using bcryptjs. Sessions are managed via express-session.
+
+   Run the server first:  node server.js
+   Then open:             http://localhost:3000
    ============================================================ */
 
 (function () {
   'use strict';
 
+
   /* ============================================================
-     CSV Storage Module (localStorage-based)
+     Session Management (API-based)
      ============================================================ */
 
-  const CSV_KEY = 'nestrox_inf_csv';
-  const SESSION_KEY = 'nestrox_session';
-  const CSV_HEADER = 'fullName,username,email,phone,password';
-
-  /**
-   * Initialize CSV in localStorage if it doesn't exist.
-   */
-  function initCSV() {
-    if (!localStorage.getItem(CSV_KEY)) {
-      localStorage.setItem(CSV_KEY, CSV_HEADER);
-    }
-  }
-
-  /**
-   * Escape a value for CSV (handle commas and quotes).
-   */
-  function csvEscape(value) {
-    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-      return '"' + value.replace(/"/g, '""') + '"';
-    }
-    return value;
-  }
-
-  /**
-   * Parse a CSV line into an array of values (handles quoted fields).
-   */
-  function parseCSVLine(line) {
-    const values = [];
-    let current = '';
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i];
-      if (inQuotes) {
-        if (ch === '"') {
-          if (i + 1 < line.length && line[i + 1] === '"') {
-            current += '"';
-            i++; // skip escaped quote
-          } else {
-            inQuotes = false;
-          }
-        } else {
-          current += ch;
-        }
-      } else {
-        if (ch === '"') {
-          inQuotes = true;
-        } else if (ch === ',') {
-          values.push(current);
-          current = '';
-        } else {
-          current += ch;
-        }
+  // Redirect to dashboard if session already exists
+  fetch('/api/user')
+    .then(res => {
+      if (res.ok) {
+        window.location.href = 'dashboard.html';
       }
-    }
-    values.push(current);
-    return values;
-  }
-
-  /**
-   * Read all users from the CSV in localStorage.
-   * @returns {Array<object>} Array of user objects.
-   */
-  function readAllUsers() {
-    initCSV();
-    const csvData = localStorage.getItem(CSV_KEY) || CSV_HEADER;
-    const lines = csvData.split('\n').filter((line) => line.trim() !== '');
-
-    if (lines.length <= 1) return []; // Only header, no users
-
-    const users = [];
-    for (let i = 1; i < lines.length; i++) {
-      const values = parseCSVLine(lines[i]);
-      if (values.length >= 5) {
-        users.push({
-          fullName: values[0],
-          username: values[1],
-          email: values[2],
-          phone: values[3],
-          password: values[4]
-        });
-      }
-    }
-    return users;
-  }
-
-  /**
-   * Append a new user row to the CSV in localStorage and trigger a download of inf.csv.
-   * @param {object} user - { fullName, username, email, phone, password (hashed) }
-   */
-  function appendUserToCSV(user) {
-    initCSV();
-    const csvData = localStorage.getItem(CSV_KEY) || CSV_HEADER;
-    const newRow = [
-      csvEscape(user.fullName),
-      csvEscape(user.username),
-      csvEscape(user.email),
-      csvEscape(user.phone),
-      csvEscape(user.password)
-    ].join(',');
-    
-    const updatedCsv = csvData + '\n' + newRow;
-    localStorage.setItem(CSV_KEY, updatedCsv);
-
-    // Trigger download of inf.csv so the user gets the updated file directly
-    try {
-      const blob = new Blob([updatedCsv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'inf.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Failed to trigger inf.csv download:', err);
-    }
-  }
-
-  /**
-   * Check if a username already exists (case-insensitive).
-   */
-  function usernameExists(username) {
-    const users = readAllUsers();
-    return users.some((u) => u.username.toLowerCase() === username.toLowerCase());
-  }
-
-  /**
-   * Check if an email already exists (case-insensitive).
-   */
-  function emailExists(email) {
-    const users = readAllUsers();
-    return users.some((u) => u.email.toLowerCase() === email.toLowerCase());
-  }
-
-  /**
-   * Check if a phone number already exists.
-   */
-  function phoneExists(phone) {
-    const users = readAllUsers();
-    return users.some((u) => u.phone === phone);
-  }
-
-  /**
-   * Find a user by username or email (for login).
-   */
-  function findUserByIdentifier(identifier) {
-    const users = readAllUsers();
-    const id = identifier.toLowerCase();
-    return users.find(
-      (u) => u.username.toLowerCase() === id || u.email.toLowerCase() === id
-    ) || null;
-  }
-
-  /* ============================================================
-     Password Hashing (SHA-256 via Web Crypto API)
-     
-     NOTE: SHA-256 is NOT suitable for production password
-     hashing. Replace with bcrypt/argon2 on a real server.
-     This is temporary for the frontend-only CSV setup.
-     ============================================================ */
-
-  /**
-   * Hash a password using SHA-256.
-   * @param {string} password
-   * @returns {Promise<string>} Hex-encoded hash.
-   */
-  async function hashPassword(password) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-  }
-
-  /* ============================================================
-     Session Management (localStorage-based)
-     
-     Session persists across page refreshes and browser restarts.
-     Cleared only on explicit logout.
-     ============================================================ */
-
-  function createSession(user) {
-    const sessionData = {
-      fullName: user.fullName,
-      username: user.username,
-      email: user.email,
-      phone: user.phone,
-      loggedInAt: new Date().toISOString()
-    };
-    localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-  }
-
-  function getSession() {
-    const data = localStorage.getItem(SESSION_KEY);
-    if (!data) return null;
-    try {
-      return JSON.parse(data);
-    } catch {
-      return null;
-    }
-  }
-
-  function clearSession() {
-    localStorage.removeItem(SESSION_KEY);
-  }
-
-  function isLoggedIn() {
-    return getSession() !== null;
-  }
-
-  /* ============================================================
-     Redirect if already logged in
-     ============================================================ */
-  if (isLoggedIn()) {
-    window.location.href = 'dashboard.html';
-    return; // Stop executing the rest of this script
-  }
+    })
+    .catch(() => {});
 
   /* ---------- Country codes (comprehensive list with flags) ---------- */
   const COUNTRIES = [
@@ -687,31 +476,35 @@
     btn.classList.add('loading');
 
     try {
-      // Find user by username or email
-      const user = findUserByIdentifier(identifier);
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ identifier, password })
+      });
 
-      if (!user) {
-        btn.classList.remove('loading');
-        showError('err-login-identifier', 'User not found.');
+      const data = await response.json();
+
+      btn.classList.remove('loading');
+
+      if (!response.ok) {
+        if (data.error && data.error.includes('User not found')) {
+          showError('err-login-identifier', 'User not found.');
+        } else if (data.error && data.error.includes('Incorrect password')) {
+          showError('err-login-password', 'Incorrect password.');
+        } else {
+          showToast(data.error || 'Login failed. Please try again.', 'error');
+        }
         return;
       }
 
-      // Hash the entered password and compare with stored hash
-      const hashedInput = await hashPassword(password);
-
-      if (hashedInput !== user.password) {
-        btn.classList.remove('loading');
-        showError('err-login-password', 'Incorrect password.');
-        return;
-      }
-
-      // Login successful — create session and redirect
-      createSession(user);
+      // Login successful — redirect to dashboard (session cookie handles auth)
       showToast('Login successful! Redirecting...', 'success');
-
       setTimeout(() => {
         window.location.href = 'dashboard.html';
       }, 800);
+
     } catch (err) {
       btn.classList.remove('loading');
       showToast('An error occurred. Please try again.', 'error');
@@ -720,7 +513,7 @@
   });
 
   /* ============================================================
-     Register Handler — Validates, checks duplicates, saves to CSV
+     Register Handler — Validates and saves to SQLite via API
      ============================================================ */
   regForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -754,9 +547,6 @@
     } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       showError('err-reg-username', 'Only letters, numbers, and underscores allowed.');
       valid = false;
-    } else if (usernameExists(username)) {
-      showError('err-reg-username', 'Username already exists.');
-      valid = false;
     }
 
     // Email
@@ -766,9 +556,6 @@
     } else if (!isValidEmail(email)) {
       showError('err-reg-email', 'Please enter a valid email address.');
       valid = false;
-    } else if (emailExists(email)) {
-      showError('err-reg-email', 'Email already registered.');
-      valid = false;
     }
 
     // Mobile
@@ -777,9 +564,6 @@
       valid = false;
     } else if (!isValidMobile(mobile)) {
       showError('err-reg-mobile', 'Phone number must be exactly 10 digits.');
-      valid = false;
-    } else if (phoneExists(mobile)) {
-      showError('err-reg-mobile', 'Phone number already registered.');
       valid = false;
     }
 
@@ -808,25 +592,43 @@
     btn.classList.add('loading');
 
     try {
-      // Hash the password before storing
-      const hashedPassword = await hashPassword(password);
-
-      // Append user to CSV storage
-      appendUserToCSV({
-        fullName: fullName,
-        username: username,
-        email: email.toLowerCase(),
-        phone: mobile,
-        password: hashedPassword
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fullName,
+          username,
+          email,
+          phone: mobile,
+          password
+        })
       });
 
-      // Success
+      const data = await response.json();
       btn.classList.remove('loading');
+
+      if (!response.ok) {
+        if (data.error && data.error.includes('Username already exists')) {
+          showError('err-reg-username', 'Username already exists.');
+        } else if (data.error && data.error.includes('Email already registered')) {
+          showError('err-reg-email', 'Email already registered.');
+        } else if (data.error && data.error.includes('Phone number already registered')) {
+          showError('err-reg-mobile', 'Phone number already registered.');
+        } else {
+          showToast(data.error || 'Registration failed.', 'error');
+        }
+        return;
+      }
+
+      // Success
       showToast('Account created successfully!', 'success');
       regForm.reset();
       pwStrengthEl.classList.remove('visible');
       pwStrengthEl.removeAttribute('data-level');
       switchTo('login');
+
     } catch (err) {
       btn.classList.remove('loading');
       showToast('An error occurred. Please try again.', 'error');
@@ -864,7 +666,6 @@
     this.value = this.value.replace(/[^\d]/g, '');
   });
 
-  /* ---------- Initialize CSV storage ---------- */
-  initCSV();
+  /* ---------- Page Initialized ---------- */
 
 })();

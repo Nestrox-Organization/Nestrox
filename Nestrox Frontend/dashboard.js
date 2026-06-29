@@ -6,24 +6,31 @@
   'use strict';
 
   /* ============================================================
-     Session Auth Guard
+     Session Auth Guard (API-based)
      ============================================================ */
-  const SESSION_KEY = 'nestrox_session';
-  const sessionData = localStorage.getItem(SESSION_KEY);
-  
-  if (!sessionData) {
-    // Prevent unauthenticated access
-    window.location.href = 'index.html';
-    return;
-  }
-
   let currentUser = {};
-  try {
-    currentUser = JSON.parse(sessionData);
-  } catch (e) {
-    window.location.href = 'index.html';
-    return;
-  }
+
+  // Fetch current user session details
+  fetch('/api/user')
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('Unauthorized');
+      }
+      return res.json();
+    })
+    .then(data => {
+      currentUser = data.user;
+      
+      // Set personalized welcome greeting
+      const greetingEl = document.querySelector('.sidebar__greeting');
+      if (greetingEl && currentUser.fullName) {
+        greetingEl.textContent = `Welcome, ${currentUser.fullName}!`;
+      }
+    })
+    .catch(err => {
+      // Redirect to login if unauthorized
+      window.location.href = 'index.html';
+    });
 
   /* ---------- DOM References ---------- */
   const btnProfile  = document.getElementById('btn-profile');
@@ -32,12 +39,6 @@
   const sidebarRight = document.getElementById('sidebar-right');
   const overlay     = document.getElementById('overlay');
   const btnLogout   = document.getElementById('menu-logout');
-  const greetingEl  = document.querySelector('.sidebar__greeting');
-
-  // Set personalized welcome greeting
-  if (greetingEl && currentUser.fullName) {
-    greetingEl.textContent = `Welcome, ${currentUser.fullName}!`;
-  }
 
   /* ---------- Sidebar State ---------- */
   let activePanel = null; // 'left' | 'right' | null
@@ -90,10 +91,15 @@
     if (e.key === 'Escape') closeAllPanels();
   });
 
-  // Logout → clear session and go back to login page
+  // Logout → clear server session and go back to login page
   btnLogout.addEventListener('click', () => {
-    localStorage.removeItem('nestrox_session');
-    window.location.href = 'index.html';
+    fetch('/api/logout', { method: 'POST' })
+      .then(() => {
+        window.location.href = 'index.html';
+      })
+      .catch(() => {
+        window.location.href = 'index.html';
+      });
   });
 
   /* ---------- Sidebar menu item clicks (placeholder) ---------- */
