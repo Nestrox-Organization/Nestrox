@@ -105,10 +105,17 @@ body {
 }
 
 .nav-brand-img {
-  height: 56px;
+  height: 158px;
   object-fit: contain;
   user-select: none;
   pointer-events: none;
+  filter: drop-shadow(0 0 14px rgba(93, 115, 255, 0.65)) drop-shadow(0 4px 12px rgba(93, 115, 255, 0.45));
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.nav-brand:hover .nav-brand-img {
+  filter: drop-shadow(0 0 26px rgba(93, 115, 255, 0.95)) drop-shadow(0 6px 20px rgba(93, 115, 255, 0.65));
+  transform: scale(1.05);
 }
 
 /* ============================================================
@@ -448,7 +455,7 @@ body {
   }
 
   .nav-brand-img {
-    height: 46px;
+    height: 130px;
   }
 
   .nav-btn svg {
@@ -492,7 +499,7 @@ body {
   }
 
   .nav-brand-img {
-    height: 40px;
+    height: 116px;
   }
 
   .cards {
@@ -557,7 +564,7 @@ body {
   }
 
   .nav-brand-img {
-    height: 34px;
+    height: 98px;
   }
 
   .cards {
