@@ -102,13 +102,18 @@
       });
   });
 
-  /* ---------- Sidebar menu item clicks (placeholder) ---------- */
-  const menuItems = document.querySelectorAll('.sidebar__item:not(#menu-logout)');
-  menuItems.forEach((item) => {
-    item.addEventListener('click', () => {
-      closeAllPanels();
-    });
+  /* ---------- Sidebar menu item clicks ---------- */
+  ['menu-profile', 'menu-room-settings', 'menu-settlements', 'menu-app-settings'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', () => closeAllPanels());
   });
+
+  // Help & Support → navigate to dedicated page
+  document.getElementById('menu-help').addEventListener('click', () => {
+    closeAllPanels();
+    window.location.href = 'help.html';
+  });
+
 
   /* ---------- Room Options Modal ---------- */
   const cardRoom        = document.getElementById('card-room');

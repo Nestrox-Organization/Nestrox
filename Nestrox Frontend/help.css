@@ -1,0 +1,223 @@
+/* ============================================================
+   Nestrox — Help & Support Page Styles
+   Extends dashboard.css — do NOT modify dashboard.css
+   ============================================================ */
+
+/* ---- Main layout: centers the card ---- */
+.help-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: calc(var(--nav-h, 80px) + 40px) 24px 100px;
+  animation: fadeUp 0.45s ease-out both;
+}
+
+/* ---- The card ---- */
+.help-card {
+  background: #ffffff;
+  border: 2px solid #8118fa;
+  border-radius: 24px;
+  padding: 52px 48px 44px;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  box-shadow:
+    0 8px 40px rgba(129, 24, 250, 0.14),
+    0 2px 12px rgba(129, 24, 250, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle purple glow top-edge accent */
+.help-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #8118fa, transparent);
+  border-radius: 0 0 4px 4px;
+}
+
+/* ---- Icon ---- */
+.help-card__icon {
+  width: 68px;
+  height: 68px;
+  background: linear-gradient(135deg, #8118fa 0%, #1c28e4 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+  box-shadow: 0 6px 24px rgba(129, 24, 250, 0.32);
+}
+
+.help-card__icon svg {
+  width: 34px;
+  height: 34px;
+  fill: #ffffff;
+}
+
+/* ---- Title ---- */
+.help-card__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #010f55;
+  letter-spacing: -0.4px;
+  margin: 0 0 16px;
+  text-align: center;
+}
+
+/* ---- Happy message ---- */
+.help-card__message {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #010f55;
+  text-align: center;
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+/* ---- Divider ---- */
+.help-card__divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(129, 24, 250, 0.25), transparent);
+  margin-bottom: 28px;
+}
+
+/* ---- "Reach us at" label ---- */
+.help-card__contact-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgba(1, 15, 85, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 10px;
+}
+
+/* ---- Email link ---- */
+.help-card__email {
+  display: inline-block;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #000000;
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(129, 24, 250, 0.22);
+  background: rgba(129, 24, 250, 0.04);
+  transition: background 0.22s ease, border-color 0.22s ease, transform 0.18s ease, box-shadow 0.22s ease;
+  margin-bottom: 32px;
+  word-break: break-all;
+  text-align: center;
+}
+
+.help-card__email:hover {
+  background: rgba(129, 24, 250, 0.09);
+  border-color: #8118fa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(129, 24, 250, 0.15);
+}
+
+.help-card__email:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* ---- Back button ---- */
+.help-card__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: #010f55;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font, 'Inter', system-ui, sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.18s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(1, 15, 85, 0.24);
+  letter-spacing: 0.01em;
+}
+
+.help-card__back svg {
+  width: 20px;
+  height: 20px;
+  fill: #ffffff;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.help-card__back:hover {
+  background: #0a1f80;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(1, 15, 85, 0.34);
+}
+
+.help-card__back:hover svg {
+  transform: translateX(-3px);
+}
+
+.help-card__back:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(1, 15, 85, 0.18);
+}
+
+/* ---- Active sidebar item highlight ---- */
+.sidebar__item--active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 600px) {
+  .help-main {
+    padding: calc(var(--nav-h, 72px) + 28px) 16px 100px;
+  }
+
+  .help-card {
+    padding: 40px 28px 36px;
+    border-radius: 20px;
+  }
+
+  .help-card__title {
+    font-size: 1.35rem;
+  }
+
+  .help-card__icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 18px;
+  }
+
+  .help-card__icon svg {
+    width: 30px;
+    height: 30px;
+  }
+
+  .help-card__email {
+    font-size: 0.95rem;
+    padding: 9px 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .help-card {
+    padding: 32px 18px 28px;
+  }
+
+  .help-card__email {
+    font-size: 0.875rem;
+  }
+}

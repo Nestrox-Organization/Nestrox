@@ -281,6 +281,11 @@ app.get('/dashboard.html', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'dashboard.html'));
 });
 
+app.get('/help.html', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'help.html'));
+});
+
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
