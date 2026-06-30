@@ -3,7 +3,7 @@ const session = require('express-session');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const path = require('path');
-const { User } = require('./db');
+const { User, Room } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -270,6 +270,178 @@ app.post('/api/logout', (req, res) => {
     res.clearCookie('connect.sid');
     return res.json({ success: true, message: 'Logged out successfully.' });
   });
+});
+
+/* ============================================================
+   Room APIs
+   ============================================================ */
+
+/**
+ * POST /api/rooms
+ * Create a new room. Requires session authentication (checkAuth).
+ * Body: { name, description, maxRoommates }
+ */
+app.post('/api/rooms', checkAuth, async (req, res) => {
+  try {
+    const { name, description, maxRoommates } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'Room name is required.' });
+    }
+
+    const parsedMax = parseInt(maxRoommates, 10);
+    if (isNaN(parsedMax) || parsedMax < 1 || parsedMax > 10) {
+      return res.status(400).json({ error: 'Maximum roommates must be between 1 and 10.' });
+    }
+
+    // Generate unique 6-character room code (alphanumeric uppercase)
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    let isUnique = false;
+    let attempts = 0;
+    while (!isUnique && attempts < 100) {
+      code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const existing = await Room.findOne({ code });
+      if (!existing) {
+        isUnique = true;
+      }
+      attempts++;
+    }
+
+    if (!isUnique) {
+      return res.status(500).json({ error: 'Could not generate a unique room code. Please try again.' });
+    }
+
+    // Check if the user is already in a room. If they are, they shouldn't create a new one.
+    const userInRoom = await Room.findOne({ roommates: req.session.userId });
+    if (userInRoom) {
+      return res.status(400).json({ error: 'You are already in a room. Please leave your current room first.' });
+    }
+
+    const roomId = crypto.randomUUID();
+    const newRoom = new Room({
+      id: roomId,
+      name: name.trim(),
+      description: (description || '').trim(),
+      max_roommates: parsedMax,
+      code: code,
+      creator_id: req.session.userId,
+      created_at: new Date().toISOString(), // server timestamp
+      roommates: [req.session.userId]
+    });
+
+    await newRoom.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Room created successfully!',
+      room: newRoom
+    });
+
+  } catch (err) {
+    console.error('Create room error:', err);
+    return res.status(500).json({ error: 'Failed to create room. Please try again.' });
+  }
+});
+
+/**
+ * POST /api/rooms/join
+ * Join an existing room using Room Code. Requires session authentication (checkAuth).
+ * Body: { code }
+ */
+app.post('/api/rooms/join', checkAuth, async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code || code.trim().length !== 6) {
+      return res.status(400).json({ error: 'Please enter a valid 6-character room code.' });
+    }
+
+    const roomCode = code.trim().toUpperCase();
+
+    // Find the room
+    const room = await Room.findOne({ code: roomCode });
+    if (!room) {
+      return res.status(404).json({ error: 'Invalid Room Code' });
+    }
+
+    // Check if user is already a member
+    if (room.roommates.includes(req.session.userId)) {
+      return res.json({
+        success: true,
+        message: 'You are already a member of this room.',
+        room
+      });
+    }
+
+    // Check if user is already in some other room
+    const otherRoom = await Room.findOne({ roommates: req.session.userId });
+    if (otherRoom) {
+      return res.status(400).json({ error: 'You are already a member of another room. Leave it first.' });
+    }
+
+    // Check if the room is full
+    if (room.roommates.length >= room.max_roommates) {
+      return res.status(400).json({ error: 'Room is full' });
+    }
+
+    // Add user to the roommates list
+    room.roommates.push(req.session.userId);
+    await room.save();
+
+    return res.json({
+      success: true,
+      message: 'Joined room successfully!',
+      room
+    });
+
+  } catch (err) {
+    console.error('Join room error:', err);
+    return res.status(500).json({ error: 'Failed to join room. Please try again.' });
+  }
+});
+
+/**
+ * GET /api/rooms/current
+ * Retrieve the current room details for the logged-in user. Requires session authentication.
+ */
+app.get('/api/rooms/current', checkAuth, async (req, res) => {
+  try {
+    const room = await Room.findOne({ roommates: req.session.userId });
+    if (!room) {
+      return res.json({ success: true, room: null });
+    }
+    return res.json({ success: true, room });
+  } catch (err) {
+    console.error('Get current room error:', err);
+    return res.status(500).json({ error: 'Failed to retrieve current room details.' });
+  }
+});
+
+/**
+ * POST /api/rooms/leave
+ * Leave the current room. Requires session authentication.
+ */
+app.post('/api/rooms/leave', checkAuth, async (req, res) => {
+  try {
+    const room = await Room.findOne({ roommates: req.session.userId });
+    if (!room) {
+      return res.status(400).json({ error: 'You are not currently in any room.' });
+    }
+
+    // Remove user from roommates list
+    room.roommates.pull(req.session.userId);
+    await room.save();
+
+    return res.json({ success: true, message: 'Left the room successfully.' });
+
+  } catch (err) {
+    console.error('Leave room error:', err);
+    return res.status(500).json({ error: 'Failed to leave the room.' });
+  }
 });
 
 /* ============================================================

@@ -8,6 +8,20 @@ mongoose.connect(MONGO_URI)
 .then(() => console.log('✅ Connected to MongoDB Atlas Cloud Database!'))
 .catch(err => console.error('❌ Error connecting to MongoDB:', err));
 
+// Ensure Rooms collection exists
+mongoose.connection.on('connected', async () => {
+  try {
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections({ name: 'rooms' }).toArray();
+    if (collections.length === 0) {
+      await db.createCollection('rooms');
+      console.log('✅ Created "rooms" collection in MongoDB.');
+    }
+  } catch (err) {
+    console.error('Error creating rooms collection:', err);
+  }
+});
+
 // Define User Schema
 const userSchema = new mongoose.Schema({
   id: {
@@ -48,4 +62,45 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = { User };
+// Define Room Schema
+const roomSchema = new mongoose.Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    default: ''
+  },
+  max_roommates: {
+    type: Number,
+    required: true
+  },
+  code: {
+    type: String,
+    required: true,
+    unique: true,
+    uppercase: true
+  },
+  created_at: {
+    type: String,
+    required: true
+  },
+  creator_id: {
+    type: String,
+    required: true
+  },
+  roommates: {
+    type: [String],
+    default: []
+  }
+}, { collection: 'rooms' });
+
+const Room = mongoose.model('Room', roomSchema);
+
+module.exports = { User, Room };

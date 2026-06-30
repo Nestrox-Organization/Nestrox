@@ -277,6 +277,36 @@
         </form>
       </div>
 
+      <!-- View 4: Room Details (for joined/created room) -->
+      <div class="room-modal__view room-modal__view--hidden" id="room-view-details" aria-labelledby="details-view-title">
+        <h2 class="room-modal__title" id="details-view-title">Room Details</h2>
+        <p class="room-modal__subtitle" id="details-view-subtitle">Manage your current room</p>
+        
+        <div class="room-details-card" style="width: 100%; display: flex; flex-direction: column; gap: 14px; margin-top: 10px; margin-bottom: 24px; text-align: left; background: rgba(1, 15, 85, 0.04); padding: 18px; border-radius: 12px; border: 1px solid rgba(1, 15, 85, 0.08);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(1, 15, 85, 0.5);">Room Name</span>
+            <span id="details-room-name" style="font-weight: 600; color: #010f55;"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(1, 15, 85, 0.08); padding-top: 10px;">
+            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(1, 15, 85, 0.5);">Room Code</span>
+            <span id="details-room-code" style="font-weight: 700; color: #7c3aed; font-family: monospace; font-size: 1.1rem; background: rgba(124, 58, 237, 0.08); padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(1, 15, 85, 0.08); padding-top: 10px;">
+            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(1, 15, 85, 0.5);">Members Limit</span>
+            <span id="details-room-max" style="font-weight: 600; color: #010f55;"></span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(1, 15, 85, 0.08); padding-top: 10px;">
+            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(1, 15, 85, 0.5);">Description</span>
+            <span id="details-room-desc" style="font-size: 0.875rem; color: rgba(1, 15, 85, 0.7); max-height: 80px; overflow-y: auto;"></span>
+          </div>
+        </div>
+
+        <button class="room-action-btn" id="btn-leave-room" style="background: #ef4444; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.28);">
+          <svg viewBox="0 0 24 24" style="fill: #ffffff; width: 22px; height: 22px;"><path d="M16 17v-3H9v-4h7V7l5 5-5 5M14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"/></svg>
+          <span>Leave Room</span>
+        </button>
+      </div>
+
     </div>
   </div>
 

@@ -9,6 +9,25 @@
      Session Auth Guard (API-based)
      ============================================================ */
   let currentUser = {};
+  let activeRoom = null;
+
+  // Fetch current room details for the logged-in user
+  function fetchCurrentRoom() {
+    fetch('/api/rooms/current')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.room) {
+          activeRoom = data.room;
+          updateRoomUI(data.room);
+        } else {
+          activeRoom = null;
+          updateRoomUI(null);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching current room:', err);
+      });
+  }
 
   // Fetch current user session details
   fetch('/api/user')
@@ -26,6 +45,9 @@
       if (greetingEl && currentUser.fullName) {
         greetingEl.textContent = `Welcome, ${currentUser.fullName}!`;
       }
+
+      // Load room state
+      fetchCurrentRoom();
     })
     .catch(err => {
       // Redirect to login if unauthorized
@@ -115,21 +137,55 @@
   });
 
 
-  /* ---------- Room Options Modal ---------- */
+  /* ---------- Room Options Modal DOM References ---------- */
   const cardRoom        = document.getElementById('card-room');
   const roomBackdrop    = document.getElementById('room-modal-backdrop');
   const roomModalClose  = document.getElementById('room-modal-close');
+  const roomModal       = document.getElementById('room-modal');
+
+  // Room Views
+  const viewOptions     = document.getElementById('room-view-options');
+  const viewJoin        = document.getElementById('room-view-join');
+  const viewCreate      = document.getElementById('room-view-create');
+  const viewDetails     = document.getElementById('room-view-details');
+
+  // Create Room View Elements
+  const generatedCode   = document.getElementById('generated-room-code');
+  const crNameInput     = document.getElementById('cr-room-name');
+  const crNameHint      = document.getElementById('cr-name-hint');
+  const crNameError     = document.getElementById('cr-name-error');
+  const crDescInput     = document.getElementById('cr-room-desc');
+  const crDescHint      = document.getElementById('cr-desc-hint');
+  const crForm          = document.getElementById('create-room-form');
+
+  // Room Details View Elements
+  const detailsName     = document.getElementById('details-room-name');
+  const detailsCode     = document.getElementById('details-room-code');
+  const detailsMax      = document.getElementById('details-room-max');
+  const detailsDesc     = document.getElementById('details-room-desc');
+  const btnLeaveRoom    = document.getElementById('btn-leave-room');
 
   function openRoomModal() {
     roomBackdrop.classList.add('open');
     roomModalClose.focus();
+    
+    // Determine which view to show
+    if (activeRoom) {
+      showDetailsView(activeRoom);
+    } else {
+      showOptionsView();
+    }
   }
 
   function closeRoomModal() {
     roomBackdrop.classList.remove('open');
-    // Always reset to the options view when the modal is closed
+    // Always reset to the options/details view when the modal is closed
     setTimeout(() => {
-      showOptionsView();
+      if (activeRoom) {
+        showDetailsView(activeRoom);
+      } else {
+        showOptionsView();
+      }
     }, 300); // wait for the close animation to finish
   }
 
@@ -152,16 +208,20 @@
     }
   });
 
-  /* ---------- Create Room — view switching, code generator & form ---------- */
-  const viewCreate      = document.getElementById('room-view-create');
-  const generatedCode   = document.getElementById('generated-room-code');
-  const roomModal       = document.getElementById('room-modal');
-  const crNameInput     = document.getElementById('cr-room-name');
-  const crNameHint      = document.getElementById('cr-name-hint');
-  const crNameError     = document.getElementById('cr-name-error');
-  const crDescInput     = document.getElementById('cr-room-desc');
-  const crDescHint      = document.getElementById('cr-desc-hint');
-  const crForm          = document.getElementById('create-room-form');
+  // Helpers for Room details
+  function showDetailsView(room) {
+    viewOptions.classList.add('room-modal__view--hidden');
+    viewCreate.classList.add('room-modal__view--hidden');
+    viewJoin.classList.add('room-modal__view--hidden');
+    viewDetails.classList.remove('room-modal__view--hidden');
+    
+    roomModal.classList.remove('room-modal--wide');
+
+    detailsName.textContent = room.name;
+    detailsCode.textContent = room.code;
+    detailsMax.textContent = `${room.roommates.length} / ${room.max_roommates}`;
+    detailsDesc.textContent = room.description || 'No description provided.';
+  }
 
   /** Generate a random 6-char uppercase alphanumeric code. */
   function generateRoomCode() {
@@ -395,20 +455,46 @@
     const roomData = {
       name,
       description : crDescInput.value.trim(),
-      maxRoommates: parseInt(document.getElementById('cr-max-roommates').value, 10),
-      code        : generatedCode.textContent,
+      maxRoommates: parseInt(document.getElementById('cr-max-roommates').value, 10)
     };
-    // TODO: POST roomData to /api/rooms
-    clearHints();
-    closeRoomModal();
+
+    const submitBtn = document.getElementById('btn-confirm-create');
+    submitBtn.disabled = true;
+
+    fetch('/api/rooms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(roomData)
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(data => { throw new Error(data.error || 'Failed to create room.'); });
+      }
+      return res.json();
+    })
+    .then(data => {
+      submitBtn.disabled = false;
+      if (data.success && data.room) {
+        activeRoom = data.room;
+        updateRoomUI(data.room);
+        clearHints();
+        closeRoomModal();
+        resetCreateForm();
+      }
+    })
+    .catch(err => {
+      submitBtn.disabled = false;
+      crNameError.textContent = err.message;
+      crNameError.classList.add('visible');
+      crNameInput.classList.add('input--invalid');
+      setTimeout(() => crNameInput.classList.remove('input--invalid'), 350);
+      crNameInput.focus();
+    });
   });
 
   /* ---------- Join Room — view switching & validation ---------- */
-  const viewOptions     = document.getElementById('room-view-options');
-  const viewJoin        = document.getElementById('room-view-join');
-  const roomCodeInput   = document.getElementById('room-code-input');
-  const joinError       = document.getElementById('join-room-error');
-  const btnBackToOpts   = document.getElementById('btn-back-to-options');
 
   /** Show the join-room input view. */
   function showJoinView() {
@@ -425,6 +511,7 @@
   function showOptionsView() {
     viewJoin.classList.add('room-modal__view--hidden');
     viewCreate.classList.add('room-modal__view--hidden');
+    viewDetails.classList.add('room-modal__view--hidden');
     viewOptions.classList.remove('room-modal__view--hidden');
     // Restart animation for options view too
     viewOptions.style.animation = 'none';
@@ -487,12 +574,103 @@
       roomCodeInput.focus();
       return;
     }
-    // ✅ Valid code — hand off to future join logic
-    clearHints();
-    closeRoomModal();
-    // TODO: call join-room API with `code`
+
+    const joinBtn = document.getElementById('btn-confirm-join');
+    joinBtn.disabled = true;
+
+    fetch('/api/rooms/join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code })
+    })
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(data => { throw new Error(data.error || 'Failed to join room.'); });
+      }
+      return res.json();
+    })
+    .then(data => {
+      joinBtn.disabled = false;
+      if (data.success && data.room) {
+        activeRoom = data.room;
+        updateRoomUI(data.room);
+        clearHints();
+        closeRoomModal();
+        resetJoinInput();
+      }
+    })
+    .catch(err => {
+      joinBtn.disabled = false;
+      showJoinError(err.message);
+      roomCodeInput.focus();
+    });
   });
 
+  // Leave Room button
+  btnLeaveRoom.addEventListener('click', () => {
+    if (!confirm('Are you sure you want to leave this room?')) {
+      return;
+    }
+
+    btnLeaveRoom.disabled = true;
+
+    fetch('/api/rooms/leave', { method: 'POST' })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(data => { throw new Error(data.error || 'Failed to leave room.'); });
+        }
+        return res.json();
+      })
+      .then(data => {
+        btnLeaveRoom.disabled = false;
+        activeRoom = null;
+        updateRoomUI(null);
+        closeRoomModal();
+        window.location.href = 'dashboard.html';
+      })
+      .catch(err => {
+        btnLeaveRoom.disabled = false;
+        alert(err.message);
+      });
+  });
+
+  // Function to update main page UI based on active room
+  function updateRoomUI(room) {
+    const cardTitle = document.querySelector('#card-room .card__title');
+    const cardPlus = document.querySelector('#card-room .card__plus');
+    const hintMembers = document.getElementById('hint-members');
+    const hintExpenses = document.getElementById('hint-expenses');
+
+    if (room) {
+      cardTitle.textContent = room.name;
+      cardPlus.textContent = room.code;
+      cardPlus.style.fontSize = '1rem';
+      cardPlus.style.fontWeight = '700';
+      cardPlus.style.color = '#7c3aed';
+      cardPlus.style.transform = 'none';
+      cardPlus.style.background = 'rgba(124, 58, 237, 0.08)';
+      cardPlus.style.padding = '4px 10px';
+      cardPlus.style.borderRadius = '6px';
+
+      if (hintMembers) hintMembers.style.display = 'none';
+      if (hintExpenses) hintExpenses.style.display = 'none';
+    } else {
+      cardTitle.textContent = 'Create / Join Room';
+      cardPlus.textContent = '+';
+      cardPlus.style.fontSize = '';
+      cardPlus.style.fontWeight = '';
+      cardPlus.style.color = '';
+      cardPlus.style.transform = '';
+      cardPlus.style.background = '';
+      cardPlus.style.padding = '';
+      cardPlus.style.borderRadius = '';
+
+      if (hintMembers) hintMembers.style.display = 'block';
+      if (hintExpenses) hintExpenses.style.display = 'block';
+    }
+  }
 
   /* ---------- Validation Hints (no room joined yet) ---------- */
   const hintTimers = {};
@@ -524,12 +702,16 @@
 
   // Show hint when Add Members is clicked without a room
   document.getElementById('card-members').addEventListener('click', () => {
-    showHint('hint-members');
+    if (!activeRoom) {
+      showHint('hint-members');
+    }
   });
 
   // Show hint when Add Expenses is clicked without a room
   document.getElementById('card-expenses').addEventListener('click', () => {
-    showHint('hint-expenses');
+    if (!activeRoom) {
+      showHint('hint-expenses');
+    }
   });
 
 })();
