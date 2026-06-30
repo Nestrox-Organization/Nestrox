@@ -104,4 +104,17 @@
     window.location.href = 'dashboard.html';
   });
 
+  /* ---------- Email link — open Gmail compose, fallback to mailto ---------- */
+  const emailLink = document.getElementById('support-email-link');
+
+  emailLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=nestroxsupport@gmail.com&tf=1';
+    const win = window.open(gmailUrl, '_blank');
+    // If popup was blocked or failed, fall back to mailto
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+      window.location.href = 'mailto:nestroxsupport@gmail.com';
+    }
+  });
+
 })();

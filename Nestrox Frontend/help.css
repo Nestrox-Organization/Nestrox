@@ -178,6 +178,35 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* ---- No email client fallback message ---- */
+.help-card__no-client {
+  display: none;           /* hidden until JS adds .visible */
+  width: 100%;
+  margin: 0 0 24px;
+  padding: 14px 18px;
+  background: rgba(129, 24, 250, 0.06);
+  border: 1.5px solid rgba(129, 24, 250, 0.28);
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #010f55;
+  text-align: center;
+  line-height: 1.55;
+  animation: fadeUp 0.3s ease-out both;
+}
+
+.help-card__no-client strong {
+  color: #8118fa;
+  font-weight: 700;
+  display: block;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.help-card__no-client.visible {
+  display: block;
+}
+
 /* ============================================================
    Responsive
    ============================================================ */
